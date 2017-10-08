@@ -110,6 +110,7 @@ class MusicListActivity : AppCompatActivity(), MusicListContract.View {
 
     private fun setPlayer(url: String?) {
         Log.i("url", url)
+        mediaPlayer.reset()
 
         try {
             mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC)
