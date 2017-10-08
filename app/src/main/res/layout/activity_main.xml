@@ -7,17 +7,40 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <EditText
+        android:id="@+id/edit_text_search"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_margin="@dimen/small_padding"
+        android:drawableLeft="@drawable/ic_search_black_24dp"
+        android:drawablePadding="@dimen/small_padding"
+        android:drawableStart="@drawable/ic_search_black_24dp"
+        android:ellipsize="end"
+        android:hint="@string/action.search"
+        android:imeOptions="actionDone"
+        android:inputType="text"
+        android:maxLines="1"
+        tools:ignore="RtlSymmetry"/>
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/player"
+        android:layout_below="@+id/edit_text_search"
         android:clipToPadding="false"
         android:paddingBottom="@dimen/normal_padding"
         android:paddingTop="@dimen/normal_padding"
         android:scrollbars="vertical"
         app:layoutManager="android.support.v7.widget.LinearLayoutManager"
         tools:listitem="@layout/item_music"/>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"/>
 
     <LinearLayout
         android:id="@+id/player"

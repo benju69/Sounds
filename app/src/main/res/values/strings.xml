@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Sounds</string>
+
+    <string name="action.search">Search</string>
 </resources>

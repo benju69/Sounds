@@ -1,6 +1,5 @@
 package me.benju.sounds.ui
 
-import android.app.Activity
 import android.support.v7.widget.CardView
 import android.support.v7.widget.RecyclerView
 import android.view.View
@@ -17,9 +16,8 @@ import me.benju.sounds.model.rss.EntryItem
  * Created by benju on 07/10/2017.
  */
 class ChartsAdapter(
-        private var context: Activity,
         private var data: List<EntryItem>,
-        val clickListener: (EntryItem) -> Unit
+        private val clickListener: (EntryItem) -> Unit
 ) : RecyclerView.Adapter<ChartsAdapter.ViewHolder>() {
 
     override fun getItemCount(): Int {
@@ -33,13 +31,11 @@ class ChartsAdapter(
         holder.art.loadImg(imageUrl!!)
         holder.title.text = entry.imName!!.label
         holder.artist.text = entry.imArtist!!.label
-
         holder.card.setOnClickListener { clickListener(entry) }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val viewHolder = ViewHolder(parent.inflate(R.layout.item_music, false))
-        return viewHolder
+        return ViewHolder(parent.inflate(R.layout.item_music, false))
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

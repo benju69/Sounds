@@ -7,11 +7,10 @@ import android.os.Handler
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.RecyclerView
 import android.util.Log
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.SeekBar
-import android.widget.TextView
+import android.view.View
+import android.widget.*
 import bind
+import com.jakewharton.rxbinding2.widget.RxTextView
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import loadImg
@@ -20,6 +19,8 @@ import me.benju.sounds.api.MusicService
 import me.benju.sounds.model.rss.TopSongs
 import me.benju.sounds.model.search.SearchResult
 import java.io.IOException
+
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -30,22 +31,23 @@ class MainActivity : AppCompatActivity() {
     private val playPauseButton by bind<ImageButton>(R.id.imageButtonPlayPauseNote)
     private val seekBar by bind<SeekBar>(R.id.seekBar)
 
+    private val progressBar by bind<ProgressBar>(R.id.progressBar)
+    private val searchEditText by bind<EditText>(R.id.edit_text_search)
+
     private val client = MusicService()
-
     private val mediaPlayer = MediaPlayer()
-
     private val seekHandler = Handler()
-
-    // TODO search bar, search view
-    // TODO MVP
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        //getMusic("Metallica")
-
         getTop100()
+
+        RxTextView.textChanges(searchEditText)
+                .subscribe { value: CharSequence ->
+                    searchMusic(value.toString().trim())
+                }
     }
 
     override fun onPause() {
@@ -60,6 +62,7 @@ class MainActivity : AppCompatActivity() {
                 .subscribe({ result ->
                     Log.d("top", result.toString())
 
+                    hideProgress()
                     setTopSongsList(result)
                 }, {error ->
                     error.printStackTrace()
@@ -67,7 +70,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setTopSongsList(result: TopSongs) {
-        recyclerView.adapter = ChartsAdapter(this, result.feed!!.entry) {
+        recyclerView.adapter = ChartsAdapter(result.feed!!.entry) {
             val url = it.link?.get(1)?.attributes?.href
             Log.i("url", url)
             setPlayer(url)
@@ -112,7 +115,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun getMusic(searchQuery: String) {
+    fun searchMusic(searchQuery: String) {
         client.api.search(searchQuery, "FR", 100, "music")
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
@@ -127,8 +130,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setMusicList(result: SearchResult) {
-        var adapter = MusicAdapter(this, result.results)
-        recyclerView.adapter = adapter
+        recyclerView.adapter = MusicAdapter(result.results) {
+            val url = it.previewUrl
+            Log.i("url", url)
+            setPlayer(url)
+
+            albumArt.loadImg(it.artworkUrl100!!)
+            trackName.text = it.trackName
+            artistName.text = it.artistName
+        }
+    }
+
+    fun hideProgress() {
+        progressBar.visibility = View.GONE
     }
 
     fun seekUpdater() {
