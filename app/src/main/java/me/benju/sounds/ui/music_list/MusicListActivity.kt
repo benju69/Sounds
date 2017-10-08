@@ -29,8 +29,10 @@ class MusicListActivity : AppCompatActivity(), MusicListContract.View {
     private val progressBar by bind<ProgressBar>(R.id.progressBar)
     private val searchEditText by bind<EditText>(R.id.edit_text_search)
 
-    private val mediaPlayer = MediaPlayer()
+    private lateinit var mediaPlayer: MediaPlayer
     private val seekHandler = Handler()
+
+    private var url: String? = null
 
     private lateinit var presenter: MusicListContract.Presenter
 
@@ -51,8 +53,18 @@ class MusicListActivity : AppCompatActivity(), MusicListContract.View {
                 }
     }
 
-    override fun onPause() {
+    override fun onResume() {
+        mediaPlayer = MediaPlayer()
+        if (url != null) {
+           setPlayer(url)
+        }
+        super.onResume()
+    }
+
+    override fun onStop() {
+        super.onStop()
         super.onPause()
+        seekHandler.removeCallbacks(runnableSeek)
         mediaPlayer?.release()
     }
 
@@ -76,8 +88,7 @@ class MusicListActivity : AppCompatActivity(), MusicListContract.View {
 
     override fun setTopSongsList(result: TopSongs) {
         recyclerView.adapter = ChartsAdapter(result.feed!!.entry) {
-            val url = it.link?.get(1)?.attributes?.href
-            Log.i("url", url)
+            url = it.link?.get(1)?.attributes?.href
             setPlayer(url)
 
             albumArt.loadImg(it.imImage?.get(2)?.label!!)
@@ -88,8 +99,7 @@ class MusicListActivity : AppCompatActivity(), MusicListContract.View {
 
     override fun setSearchResultsList(result: SearchResult) {
         recyclerView.adapter = MusicAdapter(result.results) {
-            val url = it.previewUrl
-            Log.i("url", url)
+            url = it.previewUrl
             setPlayer(url)
 
             albumArt.loadImg(it.artworkUrl100!!)
@@ -99,30 +109,28 @@ class MusicListActivity : AppCompatActivity(), MusicListContract.View {
     }
 
     private fun setPlayer(url: String?) {
-        mediaPlayer.stop()
-        mediaPlayer.reset()
+        Log.i("url", url)
 
         try {
             mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC)
             mediaPlayer.setDataSource(url)
             mediaPlayer.prepare() // might take long! (for buffering, etc)
             mediaPlayer.start()
+            playPauseButton.setImageResource(R.drawable.ic_pause_black_48dp)
             mediaPlayer.setOnCompletionListener {
-                mediaPlayer.pause()
-                mediaPlayer.stop()
-                mediaPlayer.reset()
+                playPauseButton.setImageResource(R.drawable.ic_play_arrow_black_48dp)
+                setPlayButton()
             }
         } catch (exception : IOException) {
         }
 
         seekBar.max = mediaPlayer.duration
-        seekUpdater()
+        updateSeekBar()
 
         setPlayButton()
     }
 
     private fun setPlayButton() {
-        playPauseButton.setImageResource(R.drawable.ic_pause_black_48dp)
         playPauseButton.setOnClickListener {
             if (mediaPlayer.isPlaying) {
                 mediaPlayer.pause()
@@ -134,12 +142,12 @@ class MusicListActivity : AppCompatActivity(), MusicListContract.View {
         }
     }
 
-    fun seekUpdater() {
+    private fun updateSeekBar() {
         if (mediaPlayer != null) {
             seekBar.progress = mediaPlayer.currentPosition
             seekHandler.postDelayed(runnableSeek, 100)
         }
     }
 
-    var runnableSeek: Runnable = Runnable { seekUpdater() }
+    var runnableSeek: Runnable = Runnable { updateSeekBar() }
 }
