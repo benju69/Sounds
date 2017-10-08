@@ -9,6 +9,6 @@ package me.benju.sounds
  * https://affiliate.itunes.apple.com/resources/documentation/itunes-store-web-service-search-api/
  *
  * this api doesn't give the charts, we need the top 100 songs
- * use the rss or find an other api
+ * use the rss : https://itunes.apple.com/fr/rss/topsongs/limit=100/json
  */
 val baseUrl = "https://itunes.apple.com/"

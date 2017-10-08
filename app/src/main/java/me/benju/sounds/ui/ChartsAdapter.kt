@@ -1,8 +1,6 @@
 package me.benju.sounds.ui
 
 import android.app.Activity
-import android.media.AudioManager
-import android.media.MediaPlayer
 import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
@@ -13,26 +11,27 @@ import inflate
 import listen
 import loadImg
 import me.benju.sounds.R
-import me.benju.sounds.model.search.ResultsItem
+import me.benju.sounds.model.rss.EntryItem
 
 /**
  * Created by benju on 07/10/2017.
  */
-class MusicAdapter(
+class ChartsAdapter(
         private var context: Activity,
-        private var data: List<ResultsItem>
-) : RecyclerView.Adapter<MusicAdapter.ViewHolder>() {
+        private var data: List<EntryItem>
+) : RecyclerView.Adapter<ChartsAdapter.ViewHolder>() {
 
     override fun getItemCount(): Int {
         return data.size
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val music = data[position]
+        val entry = data[position]
 
-        holder.art.loadImg(music.artworkUrl100!!)
-        holder.title.text = music.trackName
-        holder.artist.text = music.artistName
+        val imageUrl = entry.imImage?.get(0)?.label
+        holder.art.loadImg(imageUrl!!)
+        holder.title.text = entry.title!!.label
+        holder.artist.text = entry.imArtist!!.label
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -41,12 +40,12 @@ class MusicAdapter(
             // TODO open, play music in a new view, or in the same view, make a player
 
             // simple mediaplayer
-            val url = data[position].previewUrl
-            val mediaPlayer = MediaPlayer()
-            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC)
-            mediaPlayer.setDataSource(url)
-            mediaPlayer.prepare() // might take long! (for buffering, etc)
-            mediaPlayer.start()
+//            val url = data[position].previewUrl
+//            val mediaPlayer = MediaPlayer()
+//            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC)
+//            mediaPlayer.setDataSource(url)
+//            mediaPlayer.prepare() // might take long! (for buffering, etc)
+//            mediaPlayer.start()
         }
     }
 
