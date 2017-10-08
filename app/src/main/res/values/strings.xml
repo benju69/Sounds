@@ -2,4 +2,6 @@
     <string name="app_name">Sounds</string>
 
     <string name="action.search">Search</string>
+
+    <string name="error">An error occurred, please check your connection</string>
 </resources>

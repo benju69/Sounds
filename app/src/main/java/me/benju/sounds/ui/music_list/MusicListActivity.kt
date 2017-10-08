@@ -1,4 +1,4 @@
-package me.benju.sounds.ui
+package me.benju.sounds.ui.music_list
 
 import android.media.AudioManager
 import android.media.MediaPlayer
@@ -11,18 +11,13 @@ import android.view.View
 import android.widget.*
 import bind
 import com.jakewharton.rxbinding2.widget.RxTextView
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import loadImg
 import me.benju.sounds.R
-import me.benju.sounds.api.MusicService
 import me.benju.sounds.model.rss.TopSongs
 import me.benju.sounds.model.search.SearchResult
 import java.io.IOException
-import java.util.*
 
-
-class MainActivity : AppCompatActivity() {
+class MusicListActivity : AppCompatActivity(), MusicListContract.View {
 
     private val recyclerView by bind<RecyclerView>(R.id.list)
     private val artistName by bind<TextView>(R.id.nowPlayingArtistName)
@@ -34,23 +29,25 @@ class MainActivity : AppCompatActivity() {
     private val progressBar by bind<ProgressBar>(R.id.progressBar)
     private val searchEditText by bind<EditText>(R.id.edit_text_search)
 
-    private val client = MusicService()
     private val mediaPlayer = MediaPlayer()
     private val seekHandler = Handler()
 
-    private val locale = Locale.getDefault().country
+    private lateinit var presenter: MusicListContract.Presenter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        Log.d("locale", locale)
-
-        getTop100()
+        MusicListPresenter(this)
+        presenter.start()
 
         RxTextView.textChanges(searchEditText)
                 .subscribe { value: CharSequence ->
-                    searchMusic(value.toString().trim())
+                    if (!value.isEmpty()) {
+                        presenter.searchMusic(value.toString().trim())
+                    } else {
+                        presenter.getTop100()
+                    }
                 }
     }
 
@@ -59,21 +56,25 @@ class MainActivity : AppCompatActivity() {
         mediaPlayer?.release()
     }
 
-    fun getTop100() {
-        client.api.getTop100ForSongs(locale)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .subscribe({ result ->
-                    Log.d("top", result.toString())
-
-                    hideProgress()
-                    setTopSongsList(result)
-                }, {error ->
-                    error.printStackTrace()
-                })
+    override fun setPresenter(presenter: MusicListContract.Presenter) {
+        this.presenter = presenter
     }
 
-    private fun setTopSongsList(result: TopSongs) {
+    override fun showErrorMessage() {
+        Toast.makeText(this, R.string.error, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showProgress() {
+        progressBar.visibility = View.VISIBLE
+        recyclerView.visibility = View.GONE
+    }
+
+    override fun hideProgress() {
+        progressBar.visibility = View.GONE
+        recyclerView.visibility = View.VISIBLE
+    }
+
+    override fun setTopSongsList(result: TopSongs) {
         recyclerView.adapter = ChartsAdapter(result.feed!!.entry) {
             val url = it.link?.get(1)?.attributes?.href
             Log.i("url", url)
@@ -82,6 +83,18 @@ class MainActivity : AppCompatActivity() {
             albumArt.loadImg(it.imImage?.get(2)?.label!!)
             trackName.text = it.imName!!.label
             artistName.text = it.imArtist!!.label
+        }
+    }
+
+    override fun setSearchResultsList(result: SearchResult) {
+        recyclerView.adapter = MusicAdapter(result.results) {
+            val url = it.previewUrl
+            Log.i("url", url)
+            setPlayer(url)
+
+            albumArt.loadImg(it.artworkUrl100!!)
+            trackName.text = it.trackName
+            artistName.text = it.artistName
         }
     }
 
@@ -100,14 +113,16 @@ class MainActivity : AppCompatActivity() {
                 mediaPlayer.reset()
             }
         } catch (exception : IOException) {
-
         }
 
         seekBar.max = mediaPlayer.duration
         seekUpdater()
 
-        playPauseButton.setImageResource(R.drawable.ic_pause_black_48dp)
+        setPlayButton()
+    }
 
+    private fun setPlayButton() {
+        playPauseButton.setImageResource(R.drawable.ic_pause_black_48dp)
         playPauseButton.setOnClickListener {
             if (mediaPlayer.isPlaying) {
                 mediaPlayer.pause()
@@ -117,36 +132,6 @@ class MainActivity : AppCompatActivity() {
                 playPauseButton.setImageResource(R.drawable.ic_pause_black_48dp)
             }
         }
-    }
-
-    fun searchMusic(searchQuery: String) {
-        client.api.search(searchQuery, locale, 100, "music")
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .subscribe({ result ->
-                    Log.d("music", result.toString())
-
-                    setMusicList(result)
-                }, { error ->
-                    error.printStackTrace()
-                })
-
-    }
-
-    private fun setMusicList(result: SearchResult) {
-        recyclerView.adapter = MusicAdapter(result.results) {
-            val url = it.previewUrl
-            Log.i("url", url)
-            setPlayer(url)
-
-            albumArt.loadImg(it.artworkUrl100!!)
-            trackName.text = it.trackName
-            artistName.text = it.artistName
-        }
-    }
-
-    fun hideProgress() {
-        progressBar.visibility = View.GONE
     }
 
     fun seekUpdater() {

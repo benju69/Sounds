@@ -1,6 +1,5 @@
-package me.benju.sounds.ui
+package me.benju.sounds.ui.music_list
 
-import android.app.Activity
 import android.support.v7.widget.CardView
 import android.support.v7.widget.RecyclerView
 import android.view.View
@@ -11,27 +10,28 @@ import bind
 import inflate
 import loadImg
 import me.benju.sounds.R
-import me.benju.sounds.model.search.ResultsItem
+import me.benju.sounds.model.rss.EntryItem
 
 /**
  * Created by benju on 07/10/2017.
  */
-class MusicAdapter(
-        private var data: List<ResultsItem>,
-        private val clickListener: (ResultsItem) -> Unit
-) : RecyclerView.Adapter<MusicAdapter.ViewHolder>() {
+class ChartsAdapter(
+        private var data: List<EntryItem>,
+        private val clickListener: (EntryItem) -> Unit
+) : RecyclerView.Adapter<ChartsAdapter.ViewHolder>() {
 
     override fun getItemCount(): Int {
         return data.size
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val resultEntry = data[position]
+        val entry = data[position]
 
-        holder.art.loadImg(resultEntry.artworkUrl100!!)
-        holder.title.text = resultEntry.trackName
-        holder.artist.text = resultEntry.artistName
-        holder.card.setOnClickListener { clickListener(resultEntry) }
+        val imageUrl = entry.imImage?.get(1)?.label
+        holder.art.loadImg(imageUrl!!)
+        holder.title.text = entry.imName!!.label
+        holder.artist.text = entry.imArtist!!.label
+        holder.card.setOnClickListener { clickListener(entry) }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
