@@ -1,6 +1,8 @@
 package me.benju.sounds.ui
 
 import android.app.Activity
+import android.media.AudioManager
+import android.media.MediaPlayer
 import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
@@ -36,7 +38,15 @@ class MusicAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val viewHolder = ViewHolder(parent.inflate(R.layout.item_music, false))
         return viewHolder.listen { position, _ ->
-            // TODO open, play music
+            // TODO open, play music in a new view, or in the same view, make a player
+
+            // simple mediaplayer
+            val url = data[position].previewUrl
+            val mediaPlayer = MediaPlayer()
+            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC)
+            mediaPlayer.setDataSource(url)
+            mediaPlayer.prepare() // might take long! (for buffering, etc)
+            mediaPlayer.start()
         }
     }
 
