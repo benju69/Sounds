@@ -19,7 +19,7 @@ import me.benju.sounds.api.MusicService
 import me.benju.sounds.model.rss.TopSongs
 import me.benju.sounds.model.search.SearchResult
 import java.io.IOException
-
+import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -38,9 +38,13 @@ class MainActivity : AppCompatActivity() {
     private val mediaPlayer = MediaPlayer()
     private val seekHandler = Handler()
 
+    private val locale = Locale.getDefault().country
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        Log.d("locale", locale)
 
         getTop100()
 
@@ -56,7 +60,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun getTop100() {
-        client.api.getTop100ForSongs("FR")
+        client.api.getTop100ForSongs(locale)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
                 .subscribe({ result ->
@@ -116,7 +120,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun searchMusic(searchQuery: String) {
-        client.api.search(searchQuery, "FR", 100, "music")
+        client.api.search(searchQuery, locale, 100, "music")
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
                 .subscribe({ result ->
