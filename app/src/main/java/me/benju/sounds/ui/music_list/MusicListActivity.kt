@@ -10,7 +10,10 @@ import android.util.Log
 import android.view.View
 import android.widget.*
 import bind
+import com.jakewharton.rxbinding2.widget.RxSeekBar
 import com.jakewharton.rxbinding2.widget.RxTextView
+import com.jakewharton.rxbinding2.widget.SeekBarProgressChangeEvent
+import io.reactivex.android.schedulers.AndroidSchedulers
 import loadImg
 import me.benju.sounds.R
 import me.benju.sounds.model.rss.TopSongs
@@ -49,6 +52,19 @@ class MusicListActivity : AppCompatActivity(), MusicListContract.View {
                         presenter.searchMusic(value.toString().trim())
                     } else {
                         presenter.getTop100()
+                    }
+                }
+
+        RxSeekBar.changeEvents(seekBar)
+                .ofType(SeekBarProgressChangeEvent::class.java)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe { seekBarChangeEvent: SeekBarProgressChangeEvent ->
+                    val progress = seekBarChangeEvent.progress()
+                    val fromUser = seekBarChangeEvent.fromUser()
+                    if (fromUser) {
+                        if (mediaPlayer != null) {
+                            mediaPlayer.seekTo(progress)
+                        }
                     }
                 }
     }
