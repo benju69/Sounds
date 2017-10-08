@@ -1,5 +1,9 @@
 package me.benju.sounds.model.rss
 
+import com.squareup.moshi.Json
+
 data class LinkItem(
-	val attributes: Attributes? = null
+        @Json(name = "im:duration")
+        val imDuration: ImDuration,
+        val attributes: Attributes? = null
 )

@@ -4,6 +4,7 @@ import android.app.Activity
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -42,6 +43,7 @@ class MusicAdapter(
 
             // simple mediaplayer
             val url = data[position].previewUrl
+            Log.i("url", url)
             val mediaPlayer = MediaPlayer()
             mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC)
             mediaPlayer.setDataSource(url)
